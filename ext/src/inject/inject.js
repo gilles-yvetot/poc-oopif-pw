@@ -2,7 +2,6 @@ chrome.extension.sendMessage({}, function (response) {
   var readyStateCheckInterval = setInterval(function () {
     if (document.readyState === 'complete') {
       clearInterval(readyStateCheckInterval)
-      debugger
       const iframe = document.createElement(`iframe`)
       iframe.src = 'https://playwright.dev/'
       iframe.id = 'myFrame'

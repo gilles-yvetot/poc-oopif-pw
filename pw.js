@@ -41,5 +41,5 @@ const path = require('path')
   const page = await context.newPage()
   await page.goto('https://google.com/', { waitUntil: `networkidle` })
   const frames = await page.mainFrame().childFrames()
-  console.log('frames.length', frames.length) // frame is visible
+  console.log('frames', frames.map((f) => f.url()).join(', ')) // frame is visible
 })()
