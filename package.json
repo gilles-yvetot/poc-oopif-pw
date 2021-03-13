@@ -1,0 +1,15 @@
+{
+  "name": "poc-oopif",
+  "version": "1.0.0",
+  "description": "",
+  "main": "pw.js",
+  "dependencies": {
+    "playwright": "^1.9.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
