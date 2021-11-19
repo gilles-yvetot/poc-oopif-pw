@@ -9,8 +9,11 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "default_locale": "en",
   "permissions": ["<all_urls>"],
+  "background": {
+    "scripts": ["src/background.js"],
+    "persistent": true
+  },
   "content_scripts": [
     {
       "run_at": "document_start",

@@ -1,4 +1,4 @@
-const { chromium } = require('playwright')
+const { chromium } = require('playwright-chromium')
 const path = require('path')
 ;(async () => {
   const EXTENSION_PATH = path.resolve('./ext')
@@ -7,39 +7,32 @@ const path = require('path')
     headless: false,
     timeout: 0,
     devtools: true,
-    ignoreDefaultArgs: [
-      `--no-sandbox`,
-      `--disable-default-apps`,
-      `--disable-dev-shm-usage`,
-      `--disable-sync`,
-      `--disable-hang-monitor`,
-      `--disable-extensions`,
-      `--enable-automation`,
-      `--password-store=basic`,
-      `--use-mock-keychain`,
-      `--disable-popup-blocking`,
-      `--disable-prompt-on-repost`,
-      `--force-color-profile=srgb`,
-      `--disable-features=TranslateUI,BlinkGenPropertyTrees,ImprovedCookieControls,SameSiteByDefaultCookies`,
-      `--disable-background-timer-throttling`,
-      `--disable-backgrounding-occluded-windows`,
-      `--disable-ipc-flooding-protection`,
-      `--disable-renderer-backgrounding`,
-      `--disable-background-networking`,
-      `--disable-client-side-phishing-detection`,
-      `--disable-component-extensions-with-background-pages`,
-      `--metrics-recording-only`,
-      `--no-first-run`,
-    ],
     args: [
-      `--profile-directory=Default`, // always launch default
       `--load-extension=${EXTENSION_PATH}`,
-      `--allow-insecure-localhost`, // to make sure that we can communicate to local wss
+      `--disable-extensions-except=${EXTENSION_PATH}`,
     ],
   })
 
+  let [backgroundPage] = context.backgroundPages()
+  if (!backgroundPage) {
+    backgroundPage = await context.waitForEvent('backgroundpage')
+  }
+
   const page = await context.newPage()
+  await page.goto(`chrome://inspect/#extensions`)
+  await page.click(`#extensions-list > div > div > div > div.actions > span`)
+
   await page.goto('https://google.com/', { waitUntil: `networkidle` })
-  const frames = await page.mainFrame().childFrames()
-  console.log('frames', frames.map((f) => f.url()).join(', ')) // frame is visible
+
+  backgroundPage.waitForEvent(`request`, console.log)
+  backgroundPage.waitForEvent(`requestfailed`, console.log)
+  backgroundPage.waitForEvent(`requestfinished`, console.log)
+
+  const [response] = await Promise.all([
+    backgroundPage.waitForResponse(() => true, { timeout: 15 * 1000 }),
+    page.click('#injectedButton', { timeout: 15 * 1000 }),
+  ])
+  console.log('response', response)
 })()
+
+process.on(`unhandledRejection`, console.log)
